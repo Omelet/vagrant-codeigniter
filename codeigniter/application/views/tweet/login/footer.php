@@ -1,0 +1,1 @@
+<h4> 新規登録は<a href="registry">こちら</a></h4>
