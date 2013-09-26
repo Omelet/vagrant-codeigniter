@@ -1,9 +1,11 @@
 
-<?php echo form_open('tweet/login1')?>
-    メールアドレス
-    <input type="text" name="mailaddress"/><br/>
-    パスワード
-    <input type="text" name="password"/><br/>
+<?php echo validation_errors();?>
 
-    <input type="submit" name="submit" value="ログインする"/>
+<?php echo form_open('tweet/login')?>
+    メールアドレス
+    <input type = "text" name = "mailaddress" value = "<?php echo set_value('mailaddress');?>"/><br/>
+    パスワード
+    <input type = "password" name = "password" value = "<?php echo set_value('password');?>"/><br/>
+
+    <input type = "submit" name = "submit" value = "ログインする"/>
 </form>

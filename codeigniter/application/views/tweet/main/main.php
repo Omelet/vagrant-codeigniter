@@ -1,1 +1,5 @@
-<h1> メインページ予定地（工事中）</h1>
+<?php echo form_open('tweet/main')?>
+ツイート</br>
+<textarea name="tweet" rows="4" cols ="40"></textarea></br>
+<input type = "submit" name = "submit" value = "ツイートする"/>
+</form>
