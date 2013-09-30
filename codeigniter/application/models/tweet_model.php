@@ -8,44 +8,63 @@ class Tweet_model extends CI_Model
         $this->load->database();
         $this->load->helper('date');
     }
-        
+    
+    //アドレスからユーザー情報の取得
     public function get_user_info_from_mail($user_mail)
     {
-        $query = $this->db->get_where('user_info',array('mailaddress' => $user_mail));
+        $query = $this->db->get_where('user_info', array('mailaddress' => $user_mail));
         
         return $query->row_array();
     }
     
+    //IDからユーザー情報の取得
     public function get_user_info_from_id($user_id)
     {
-        $query = $this->db->get_where('user_info',array('user_id' => $user_id));
+        $query = $this->db->get_where('user_info', array('user_id' => $user_id));
         
         return $query->row_array();
     }
     
-    public function set_user_info()
+    //ユーザーデータの登録
+    public function set_user_info($user_data)
     {
-        
-        $pass = $this->input->post('password');
-        $enc_pass = hash("sha256",$pass);
+        $enc_pass = hash("sha256",$user_data['password']);
         $info = array(
-            'name' => $this->input->post('name'),
-            'mailaddress' => $this->input->post('mailaddress'),
-            'password' => $enc_pass
+                      'name' => $user_data['name'],
+                      'mailaddress' => $user_data['mailaddress'],
+                      'password' => $enc_pass
         );
         
-        return $this->db->insert('user_info', $info);
+        $this->db->insert('user_info', $info);
+        return $this->db->insert_id();
     }
     
-    public function set_tweet()
+    //ツイートの登録
+    public function set_tweet($user_id, $tweet)
     {
-        $user_id =  $this->session->userdata('user_id');
         $info = array(
             'user_id' => $user_id,
-            'substance' => $this->input->post('tweet'),
-            'time' => time()
+            'substance' => $tweet,
+            'time' => date("Y-m-d H:i:s")
         );
         return  $this->db->insert('tweet', $info);
+    }
+    
+    //ツイートの取得
+    public function get_tweet_data($user_id)
+    {
+        $this->db->order_by("tweet_id","desc");
+        $query = $this->db->get_where('tweet', array('user_id' => $user_id));
+        
+        return $query->result_array();
+    }
+    
+    public function get_nth_tweet($user_id)
+    {
+        $this->db->order_by("tweet_id","desc");
+        $query = $this->db->get_where('tweet', array('user_id' => $user_id));
+        
+        return $query->row_array();
     }
     
 }

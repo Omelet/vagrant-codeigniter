@@ -1,4 +1,4 @@
-
+<h2>ログイン</h2>
 <?php echo validation_errors();?>
 
 <?php echo form_open('tweet/login')?>
@@ -9,3 +9,4 @@
 
     <input type = "submit" name = "submit" value = "ログインする"/>
 </form>
+<h4> 新規登録は<a href="registry">こちら</a></h4>

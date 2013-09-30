@@ -11,6 +11,8 @@ class Tweet extends CI_Controller
         $this->load->library('encrypt');
         $this->load->helper('url');
         $this->load->library('session');
+        //$this->load->library('javascript');
+        //$this->load->library('jquery');
     }
     
        
@@ -24,18 +26,14 @@ class Tweet extends CI_Controller
         $this->form_validation->set_rules('mailaddress', 'メールアドレス', 'required|valid_email');
         $this->form_validation->set_rules('password', 'パスワード', 'required|callback_pass_check');
         
-        $this->session->set_userdata('user_status','Out');
         
-        if ($this->form_validation->run() == false){
-            $this->load->view('tweet/login/header');
+        if ($this->form_validation->run() == false) {
             $this->load->view('tweet/login/login');
-            $this->load->view('tweet/login/footer');
         } else {
             $address = $this->input->post('mailaddress');
             $info = $this->tweet_model->get_user_info_from_mail($address);
-            $this->session->set_userdata('user_id',$info['user_id']);
-            $this->session->set_userdata('user_status','Login');
-            redirect('tweet/main','location');
+            $this->session->set_userdata('user_id', $info['user_id']);
+            redirect('tweet/main', 'location');
         }
         
     }
@@ -43,21 +41,22 @@ class Tweet extends CI_Controller
     //メイン画面
     public function main()
     {
-        $user_status = $this->session->userdata('user_status');
-        if($user_status == 'Login'){
+        $user_id = $this->session->userdata('user_id');
+        if (!empty($user_id)) {
             
             $this->load->helper('form');
             $this->load->library("form_validation");
             
-            $user_id =  $this->session->userdata('user_id');
-            $user_data = $this->tweet_model->get_user_info_from_id($user_id);
-            $this->load->view('tweet/main/header',$user_data);
-            $this->load->view('tweet/main/main');
-            $this->load->view('tweet/main/footer');
-            $this->tweet_model->set_tweet();
+            $data['user'] = $this->tweet_model->get_user_info_from_id($user_id);
+            $data['tweet'] = $this->tweet_model->get_tweet_data($user_id);
+            
+            
+            $this->load->view('tweet/main/main', $data);
+            //$tweet = $this->input->post('tweet');
+            //$this->tweet_model->set_tweet($user_id, $tweet);
             
         } else {
-            redirect('tweet/login','location');
+            redirect('tweet/login', 'location');
         }
     }
     
@@ -73,20 +72,40 @@ class Tweet extends CI_Controller
         $this->form_validation->set_rules('password', 'パスワード', 'required|min_length[6]|alpha_numeric');
         $this->form_validation->set_rules('passconfirm', '確認用パスワード', 'required|matches[password]');
         
-        if ($this->form_validation->run() == false){
+        if ($this->form_validation->run() == false) {
             $this->load->helper('form');
-            $this->load->view('tweet/registry/header');
             $this->load->view('tweet/registry/registry');
-            $this->load->view('tweet/registry/footer');
         } else {
-            $this->tweet_model->set_user_info();
-            $address = $this->input->post('mailaddress');
-            $info = $this->tweet_model->get_user_info_from_mail($address);
-            $this->session->set_userdata('user_id',$info['user_id']);
-            $this->session->set_userdata('user_status','Login');
-            redirect('tweet/main','location');
+            $user_data = array(
+                'name' => $this->input->post('name'),
+                'mailaddress' => $this->input->post('mailaddress'),
+                'password' => $this->input->post('password')
+            );
+            $uid = $this->tweet_model->set_user_info($user_data);
+            $this->session->set_userdata('user_id', $uid);
+            redirect('tweet/main', 'location');
         }
         
+    }
+    
+    //最新のtweetのデータベースへの挿入
+    public function insert_tweet()
+    {
+        $user_id = $this->session->userdata('user_id');
+        $tweet = $this->input->post('tweet');
+        $this->tweet_model->set_tweet($user_id, $tweet);
+        
+    }
+    
+    public function send_tweet()
+    {
+        $user_id = $this->session->userdata('user_id');
+        $data = $this->tweet_model->get_nth_tweet($user_id);
+        
+        $this->output
+          ->set_content_type('application/json')
+          ->set_output(json_encode($data));
+         
     }
     
     //パスワードチェック
@@ -98,14 +117,15 @@ class Tweet extends CI_Controller
         
         if (empty($info)) {
             
-            $this->form_validation->set_message('pass_check',"登録されたアドレスではありません");
+            $this->form_validation->set_message('pass_check', "登録されたアドレスではありません");
             return  false;
             
         } else {
             $ency = hash("sha256",$input);
-            if ($info['password'] === $ency) return true;
-            else {
-                $this->form_validation->set_message('pass_check',"パスワードが一致しません");
+            if ($info['password'] === $ency) {
+                return true;
+            } else {
+                $this->form_validation->set_message('pass_check', "パスワードが一致しません");
                 return  false;
             }
         }
@@ -117,9 +137,10 @@ class Tweet extends CI_Controller
     {
         $info = $this->tweet_model->get_user_info_from_mail($input);
         
-        if (empty($info)) return true;
-        else {
-            $this->form_validation->set_message('mail_check',"既に登録されているアドレスです");
+        if (empty($info)) {
+            return true;
+        }else {
+            $this->form_validation->set_message('mail_check', "既に登録されているアドレスです");
             return false;
         }
     }

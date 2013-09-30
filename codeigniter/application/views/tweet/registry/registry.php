@@ -1,3 +1,5 @@
+<h2>ユーザー登録</h2>
+
 <?php echo validation_errors();?>
 
 <?php echo form_open('tweet/registry')?>
@@ -12,3 +14,5 @@
 
     <input type = "submit" name = "submit" value = "登録する"/>
 </form>
+</br>
+パスワードは6文字以上の英数字
