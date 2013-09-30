@@ -59,9 +59,10 @@ class Tweet_model extends CI_Model
         return $query->result_array();
     }
     
-    public function get_nth_tweet($user_id)
+    public function get_nth_tweet($user_id,$num)
     {
         $this->db->order_by("tweet_id","desc");
+        $this->db->limit(1,$num);
         $query = $this->db->get_where('tweet', array('user_id' => $user_id));
         
         return $query->row_array();

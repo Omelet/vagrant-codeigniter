@@ -21,18 +21,20 @@ $(function(){
         data:$(this).serialize(),
         success: function(result, textStatus, xhr){
           $form[0].reset();
-             $.ajax({
-               type: "POST",
-               url:"send_tweet",
-               dataType:"json",
-               success: function(data, dataType){
-                 var tweet_data = eval(data);
-                 $("li").before("<li>"+tweet_data.time+"</li>"+tweet_data.substance+"</br></br>");
-               }
-            });
+          var num = {num: '1'}
+          $.ajax({
+            type: "POST",
+            url:"send_tweet",
+            dataType:"json",
+            data: num,
+            success: function(data, dataType){
+                var tweet_data = eval(data);
+                $("h4").after("<li>"+tweet_data.time+"</li>"+tweet_data.substance+"</br></br>");
+            }
+          });
         }
       });
-  })
+    })
 })
 </script>
 

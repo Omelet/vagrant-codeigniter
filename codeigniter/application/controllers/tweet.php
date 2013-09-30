@@ -100,7 +100,8 @@ class Tweet extends CI_Controller
     public function send_tweet()
     {
         $user_id = $this->session->userdata('user_id');
-        $data = $this->tweet_model->get_nth_tweet($user_id);
+        $num = $this->input->post('num');
+        $data = $this->tweet_model->get_nth_tweet($user_id, $num);
         
         $this->output
           ->set_content_type('application/json')
@@ -111,22 +112,19 @@ class Tweet extends CI_Controller
     //パスワードチェック
     public function pass_check($input)
     {
-        
         $address = $this->input->post('mailaddress');
         $info = $this->tweet_model->get_user_info_from_mail($address);
         
         if (empty($info)) {
-            
             $this->form_validation->set_message('pass_check', "登録されたアドレスではありません");
             return  false;
-            
         } else {
             $ency = hash("sha256",$input);
             if ($info['password'] === $ency) {
                 return true;
             } else {
                 $this->form_validation->set_message('pass_check', "パスワードが一致しません");
-                return  false;
+                return false;
             }
         }
         return true;
