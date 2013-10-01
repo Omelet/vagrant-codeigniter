@@ -1,6 +1,6 @@
 <h2><?php echo $user['name']?>さんのページ</h2>
 
-<form id="tweet">
+<form id="tweet" name="tweet">
 <?php echo form_open('tweet/main')?>
 </br>
 <h4>ツイート</h4>
@@ -12,65 +12,55 @@
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript">
 var upNum = 10;
+var tweetNum = 0;
 $(function(){
-  display(upNum);
-  add_button(upNum);
+  display(upNum,0);
   $("#tweet").submit(function(e) {
       e.preventDefault();
       var $form = $(this);
-      $.ajax({
-        type: "POST",
-        url:"insert_tweet",
-        data:$(this).serialize(),
-        success: function(result, textStatus, xhr){
-          $form[0].reset();
-          display(upNum);
-          add_button(upNum);
-        }
-      });
-    })
-  $("button").click(function() {
+      if(document.tweet.tweet.value!="") {
+        $.ajax({
+          type: "POST",
+          url:"insert_tweet",
+          data:$(this).serialize(),
+          success: function(result, textStatus, xhr) {
+            $form[0].reset();
+            $("li").remove();
+            $("div").remove();
+            display(upNum,0);
+          }
+        });
+     }
+  });
+  $(document).on('click','button', function() {
+    display(upNum+10,upNum);
     upNum = upNum + 10;
-    display(upNum);
-    add_button(upNum);
-  })
-})
-function display(limit)
+  });
+});
+
+function display(up,low)
 {
-   $("li").remove();
-   $("div").remove();
-   send(0,limit);
-}
-function send(i,limit)
-{
-    if(i<limit){
-      var num = {num: i};
-      $.ajax({
-        type: "POST",
-        url:"send_tweet",
-        dataType:"json",
-        data: num,
-        success: function(data, dataType){
-          var tweet_data = eval(data);
-          $("p#display").append("<li>"+tweet_data.time+"</li><div>"+tweet_data.substance+"</br></br></div>");
-          send(i+1,limit);
-        }
-      });
-    }
-    else return;
-}
-function add_button(limit)
-{
-    $("button").remove();
+    var num = {up: up, low: low};
     $.ajax({
       type: "POST",
-      url:"tweet_num",
-      success: function(data,dataType){
-        if (data > limit) {
-          $("a#logout").before("<button>もっとみる</button>");
+      url:"send_tweet",
+      dataType:"json",
+      data: num,
+      success: function(data, dataType){
+        tweetNum = data.tweet_num;
+        $("button#showMore").remove();
+        if(up>tweetNum){
+          for(var i = low; i < tweetNum; i++) {
+            $("p#display").append("<li>"+data[i]['time']+"</li><div>"+data[i]['substance']+"</br></br></div>");
+          }
+        } else {
+          for(var i = low; i < up; i++) {
+             $("p#display").append("<li>"+data[i]['time']+"</li><div>"+data[i]['substance']+"</br></br></div>");
+           }
+          $("a#logout").before('<button id=¥"showMore¥">もっとみる</button>');
         }
-      }
-   });
+     }
+    });
 }
 </script>
 
