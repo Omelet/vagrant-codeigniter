@@ -59,6 +59,7 @@ class Tweet_model extends CI_Model
         return $query->result_array();
     }
     
+    //n番目のツイートの取得
     public function get_nth_tweet($user_id,$num)
     {
         $this->db->order_by("tweet_id","desc");
@@ -66,6 +67,13 @@ class Tweet_model extends CI_Model
         $query = $this->db->get_where('tweet', array('user_id' => $user_id));
         
         return $query->row_array();
+    }
+    
+    //tweet数の取得
+    public function get_tweet_num($user_id)
+    {
+        $this->db->where(array('user_id' => $user_id));
+        return $this->db->count_all_results('tweet');
     }
     
 }

@@ -11,7 +11,10 @@
 
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript">
+var upNum = 10;
 $(function(){
+  display(upNum);
+  add_button(upNum);
   $("#tweet").submit(function(e) {
       e.preventDefault();
       var $form = $(this);
@@ -21,36 +24,61 @@ $(function(){
         data:$(this).serialize(),
         success: function(result, textStatus, xhr){
           $form[0].reset();
-          var num = {num: '1'}
-          $.ajax({
-            type: "POST",
-            url:"send_tweet",
-            dataType:"json",
-            data: num,
-            success: function(data, dataType){
-                var tweet_data = eval(data);
-                $("h4").after("<li>"+tweet_data.time+"</li>"+tweet_data.substance+"</br></br>");
-            }
-          });
+          display(upNum);
+          add_button(upNum);
         }
       });
     })
+  $("button").click(function() {
+    upNum = upNum + 10;
+    display(upNum);
+    add_button(upNum);
+  })
 })
+function display(limit)
+{
+   $("li").remove();
+   $("div").remove();
+   send(0,limit);
+}
+function send(i,limit)
+{
+    if(i<limit){
+      var num = {num: i};
+      $.ajax({
+        type: "POST",
+        url:"send_tweet",
+        dataType:"json",
+        data: num,
+        success: function(data, dataType){
+          var tweet_data = eval(data);
+          $("p#display").append("<li>"+tweet_data.time+"</li><div>"+tweet_data.substance+"</br></br></div>");
+          send(i+1,limit);
+        }
+      });
+    }
+    else return;
+}
+function add_button(limit)
+{
+    $("button").remove();
+    $.ajax({
+      type: "POST",
+      url:"tweet_num",
+      success: function(data,dataType){
+        if (data > limit) {
+          $("a#logout").before("<button>もっとみる</button>");
+        }
+      }
+   });
+}
 </script>
 
-<h4>過去のツイート</h4>
-<?php $count=0;?>
-<?php foreach ($tweet as $tweet_item): ?>
+<h4 id="display">過去のツイート</h4>
+<p id="display">
+</p>
 
-    <li><?php echo $tweet_item['time']?></li>
-    <?php echo $tweet_item['substance']?></br>
-    </br>
-<?php $count++;
-    if ($count >= 10) {
-        break;
-    }?>
-<?php endforeach ?>
-
+<a id="logout" href="login"></br></br>ログアウト</a>
 
 
 

@@ -97,16 +97,30 @@ class Tweet extends CI_Controller
         
     }
     
+    //tweetの送信
     public function send_tweet()
     {
         $user_id = $this->session->userdata('user_id');
         $num = $this->input->post('num');
         $data = $this->tweet_model->get_nth_tweet($user_id, $num);
         
+        if (!empty($data)) {
         $this->output
           ->set_content_type('application/json')
           ->set_output(json_encode($data));
-         
+        } else {
+            return false;
+        }
+    }
+    
+    //tweet数の送信
+    public function tweet_num()
+    {
+        $user_id = $this->session->userdata('user_id');
+        $data = $this->tweet_model->get_tweet_num($user_id);
+        $this->output
+          ->set_content_type('application/json')
+          ->set_output(json_encode($data));
     }
     
     //パスワードチェック
