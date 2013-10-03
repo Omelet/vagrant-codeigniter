@@ -1,7 +1,7 @@
 <h2><?php echo $user['name']?>さんのページ</h2>
 
-<form id="tweet" name="tweet">
-<?php echo form_open('tweet/main')?>
+<?php $attributes = array('id'=>'tweet','name'=>'tweet');
+    echo form_open('tweet/insert_tweet',$attributes)?>
 </br>
 <h4>ツイート</h4>
 <textarea name="tweet" rows="4" cols ="40"></textarea></br>
@@ -13,6 +13,7 @@
 <script type="text/javascript">
 var upNum = 10;
 var tweetNum = 0;
+var tweet_data;
 $(function(){
   display(upNum,0);
   $("#tweet").submit(function(e) {
@@ -40,15 +41,14 @@ $(function(){
 
 function display(up,low)
 {
-    var num = {up: up, low: low};
     $.ajax({
-      type: "POST",
+      type: "GET",
       url:"send_tweet",
       dataType:"json",
-      data: num,
       success: function(data, dataType){
         tweetNum = data.tweet_num;
-        $("button#showMore").remove();
+        var button_id = upNum-10;
+        $("button#"+button_id+"").remove();
         if(up>tweetNum){
           for(var i = low; i < tweetNum; i++) {
             $("p#display").append("<li>"+data[i]['time']+"</li><div>"+data[i]['substance']+"</br></br></div>");
@@ -57,7 +57,7 @@ function display(up,low)
           for(var i = low; i < up; i++) {
              $("p#display").append("<li>"+data[i]['time']+"</li><div>"+data[i]['substance']+"</br></br></div>");
            }
-          $("a#logout").before('<button id=¥"showMore¥">もっとみる</button>');
+          $("a#logout").before('<button id='+upNum+'>もっとみる</button>');
         }
      }
     });

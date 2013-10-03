@@ -49,7 +49,7 @@ class Tweet extends CI_Controller
             
             $data['user'] = $this->tweet_model->get_user_info_from_id($user_id);
             $data['tweet'] = $this->tweet_model->get_tweet_data($user_id);
-            
+            $data['first_tweet_num'] = $this->tweet_model->get_tweet_num($user_id);
             
             $this->load->view('tweet/main/main', $data);
             //$tweet = $this->input->post('tweet');
@@ -92,8 +92,23 @@ class Tweet extends CI_Controller
     public function insert_tweet()
     {
         $user_id = $this->session->userdata('user_id');
-        $tweet = $this->input->post('tweet');
+        $tweet = $this->input->post('tweet', TRUE);
         $this->tweet_model->set_tweet($user_id, $tweet);
+        
+        $tweet_num = $this->tweet_model->get_tweet_num($user_id);
+        
+        for($i = 0; $i < $tweet_num; $i++) {
+            $data[$i] = $this->tweet_model->get_nth_tweet($user_id, $i);
+        }
+        $data['tweet_num'] = $tweet_num;
+        
+        if (!empty($data)) {
+            $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+        } else {
+            return false;
+        }
         
     }
     
@@ -101,11 +116,9 @@ class Tweet extends CI_Controller
     public function send_tweet()
     {
         $user_id = $this->session->userdata('user_id');
-        $low = $this->input->post('low');
-        $up = $this->input->post('up');
         $tweet_num = $this->tweet_model->get_tweet_num($user_id);
         
-        for($i = $low; $i < $up; $i++) {
+        for($i = 0; $i < $tweet_num; $i++) {
           $data[$i] = $this->tweet_model->get_nth_tweet($user_id, $i);
         }
         $data['tweet_num'] = $tweet_num;
