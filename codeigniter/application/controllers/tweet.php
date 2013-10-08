@@ -11,8 +11,6 @@ class Tweet extends CI_Controller
         $this->load->library('encrypt');
         $this->load->helper('url');
         $this->load->library('session');
-        //$this->load->library('javascript');
-        //$this->load->library('jquery');
     }
     
        
@@ -42,7 +40,7 @@ class Tweet extends CI_Controller
     public function main()
     {
         $user_id = $this->session->userdata('user_id');
-        if (!empty($user_id)) {
+        if (! empty($user_id)) {
             
             $this->load->helper('form');
             $this->load->library("form_validation");
@@ -52,8 +50,6 @@ class Tweet extends CI_Controller
             $data['first_tweet_num'] = $this->tweet_model->get_tweet_num($user_id);
             
             $this->load->view('tweet/main/main', $data);
-            //$tweet = $this->input->post('tweet');
-            //$this->tweet_model->set_tweet($user_id, $tweet);
             
         } else {
             redirect('tweet/login', 'location');
@@ -91,16 +87,17 @@ class Tweet extends CI_Controller
     //最新のtweetのデータベースへの挿入
     public function insert_tweet()
     {
+        $this->load->helper('form');
+        $this->load->library("form_validation");
+        
         $user_id = $this->session->userdata('user_id');
         $tweet = $this->input->post('tweet', TRUE);
         $this->tweet_model->set_tweet($user_id, $tweet);
         
         $tweet_num = $this->tweet_model->get_tweet_num($user_id);
         
-        for($i = 0; $i < $tweet_num; $i++) {
-            $data[$i] = $this->tweet_model->get_nth_tweet($user_id, $i);
-        }
-        $data['tweet_num'] = $tweet_num;
+         $data['last_tweet'] = $this->tweet_model->get_nth_tweet($user_id, 0);
+         $data['tweet_num'] = $tweet_num;
         
         if (!empty($data)) {
             $this->output
@@ -109,16 +106,17 @@ class Tweet extends CI_Controller
         } else {
             return false;
         }
-        
     }
     
     //tweetの送信
     public function send_tweet()
     {
         $user_id = $this->session->userdata('user_id');
+        $low = $this->input->get('low');
+        $up = $this->input->get('up');
         $tweet_num = $this->tweet_model->get_tweet_num($user_id);
         
-        for($i = 0; $i < $tweet_num; $i++) {
+        for($i = $low; $i < $up; $i++) {
           $data[$i] = $this->tweet_model->get_nth_tweet($user_id, $i);
         }
         $data['tweet_num'] = $tweet_num;
